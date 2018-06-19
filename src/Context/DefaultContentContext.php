@@ -10,7 +10,7 @@ use Behat\Gherkin\Node\TableNode;
 use Drupal\DrupalExtension\Hook\Scope\EntityScope;
 use Drupal\DrupalExtension\Context\DrupalAwareInterface;
 use Drupal\DrupalUserManagerInterface;
-use DennisDigital\Behat\DefaultContent\Content\DefaultContent;
+use Drupal\ReferencesGenerator\Content\DefaultContent;
 use DennisDigital\Behat\DefaultContent\Generator\EntityGenerator;
 use DennisDigital\Behat\DefaultContent\Generator\ImageGenerator;
 
@@ -190,31 +190,6 @@ class DefaultContentContext implements DrupalAwareInterface {
 
       $tmpEntity = clone $entity;
       $this->drupalContext->parseEntityFields($entity->entityType, $tmpEntity);
-
-      // Create referenced entities.
-      foreach ($tmpEntity as $fieldName => $fieldValues) {
-
-        $field = field_read_field($fieldName);
-        if (empty($field)) {
-          // Field doesn't exist.
-          continue;
-        }
-        $fieldType = $field['type'];
-
-        if (!is_array($fieldValues)) {
-          $fieldValues = array($fieldValues);
-        }
-
-        foreach ($fieldValues as $key => $fieldValue) {
-          if ($generator = EntityGenerator::getGenerator($entity, $fieldType, $fieldName)) {
-            $generator->setDrupalContext($this->drupalContext);
-            if (!$generator->referenceExists($fieldValue)) {
-              // @todo create() should use $scope->getContext()->createNode() instead of this->drupalcontext
-              $generator->create($field, $fieldValue);
-            }
-          }
-        }
-      }
     }
   }
 
